@@ -42,6 +42,7 @@ import {
 } from "vue";
 export default {
   props: {
+    uid: { type: String, required: true },
     content: { type: Object, required: true },
     wwFrontState: { type: Object, required: true },
     /* wwEditor:start */
@@ -72,6 +73,20 @@ export default {
       () => {}
     );
     const ids = [id];
+
+    // Add provide for local context
+    const localContext = ref({
+      data: {
+        dropdown: {
+          utils: {
+            isOpen: false,
+          },
+        },
+      },
+    });
+
+    provide("__ww-dropdown_localContext", localContext);
+
     provide("__ww-dropdown_registerAsChild", (childId) => {
       if (!ids.includes(childId)) {
         ids.push(childId);
@@ -127,6 +142,26 @@ export default {
     }
 
     const isOpened = ref(false);
+
+    // Expose isOpen as an internal variable for NoCode users
+    const { value: isOpenVariable, setValue: setIsOpenVariable } =
+      wwLib.wwVariable.useComponentVariable({
+        uid: props.uid,
+        name: "isOpen",
+        type: "boolean",
+        defaultValue: false,
+      });
+
+    // Watch isOpened and update both localContext and internal variable
+    watch(
+      isOpened,
+      (newValue) => {
+        localContext.value.data.dropdown.utils.isOpen = newValue;
+        setIsOpenVariable(newValue);
+      },
+      { immediate: true }
+    );
+
     const isDisplayed = computed(() => {
       return (
         isOpened.value || (props.content.forceDisplayEditor && isEditing.value)
@@ -232,6 +267,7 @@ export default {
       delayedIsClosed,
       delayedIsOpen,
       id,
+      localContext,
     };
   },
   computed: {
@@ -312,9 +348,8 @@ export default {
                 this.getOppositeSide(position) + " center";
             }
             style["left"] = `calc(${offsetX} + ${this.triggerBox.left}px)`;
-            style[
-              "transform"
-            ] = `translateX( calc(-50% + (${this.triggerBox.width}px / 2) + ${offsetX}))`;
+            style["transform"] =
+              `translateX( calc(-50% + (${this.triggerBox.width}px / 2) + ${offsetX}))`;
             style["--slideOriginX"] = `0px`;
           } else {
             if (this.content.animated) {
@@ -322,12 +357,10 @@ export default {
                 "center " + this.getOppositeSide(position);
             }
             style["top"] = `calc(${this.triggerBox.top}px + ${offsetY})`;
-            style[
-              "transform"
-            ] = `translateY(calc(-50% + (${this.triggerBox.height}px / 2) + ${offsetY}))`;
-            style[
-              "--slideOriginY"
-            ] = `calc(-0.5 * ((${this.triggerBox.width}px / 2) + ${offsetX}))`;
+            style["transform"] =
+              `translateY(calc(-50% + (${this.triggerBox.height}px / 2) + ${offsetY}))`;
+            style["--slideOriginY"] =
+              `calc(-0.5 * ((${this.triggerBox.width}px / 2) + ${offsetX}))`;
           }
           break;
         case "end":
@@ -335,18 +368,16 @@ export default {
             if (this.content.animated) {
               style["--transformOrigin"] = "center";
             }
-            style[
-              "right"
-            ] = `calc(100% - ${this.triggerBox.right}px + ${offsetX})`;
+            style["right"] =
+              `calc(100% - ${this.triggerBox.right}px + ${offsetX})`;
             style["--slideOriginX"] = offsetX;
           } else {
             if (this.content.animated) {
               style["--transformOrigin"] =
                 "bottom " + this.getOppositeSide(position);
             }
-            style[
-              "bottom"
-            ] = `calc(100% - ${this.triggerBox.bottom}px + ${offsetY})`;
+            style["bottom"] =
+              `calc(100% - ${this.triggerBox.bottom}px + ${offsetY})`;
           }
           break;
       }
