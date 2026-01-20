@@ -143,21 +143,78 @@ export default {
 
     const isOpened = ref(false);
 
-    // Expose isOpen as an internal variable for NoCode users
-    const { value: isOpenVariable, setValue: setIsOpenVariable } =
-      wwLib.wwVariable.useComponentVariable({
-        uid: props.uid,
-        name: "isOpen",
-        type: "boolean",
-        defaultValue: false,
-      });
+    // Local variable data for dropdown state
+    const dropdownLocalData = computed(() => ({
+      isOpen: isOpened.value,
+      trigger: {
+        type: props.content?.triggerType || "click",
+        disabled: props.content?.disabled || false,
+      },
+      position: {
+        placement: props.content?.position || "bottom",
+        alignment: props.content?.alignment || "start",
+        offsetX: props.content?.offsetX || "0px",
+        offsetY: props.content?.offsetY || "0px",
+      },
+      state: {
+        isDisplayed:
+          isOpened.value ||
+          (props.content?.forceDisplayEditor && isEditing.value),
+        isAnimated: props.content?.animated || false,
+      },
+    }));
 
-    // Watch isOpened and update both localContext and internal variable
+    // Markdown documentation for local variables
+    const dropdownMarkdown = `### Dropdown Local Information
+
+#### isOpen
+Boolean indicating whether the dropdown is currently open or closed.
+
+#### trigger
+Information about the dropdown trigger:
+- \`type\`: Trigger type ('click', 'hover', or 'right-click')
+- \`disabled\`: Boolean indicating if dropdown is disabled
+
+#### position
+Current positioning configuration:
+- \`placement\`: Position relative to trigger ('top', 'right', 'bottom', 'left')
+- \`alignment\`: Alignment along position axis ('start', 'center', 'end')
+- \`offsetX\`: Horizontal offset (e.g., '10px', '5%')
+- \`offsetY\`: Vertical offset (e.g., '8px', '2%')
+
+#### state
+Current dropdown state:
+- \`isDisplayed\`: Whether dropdown content is being displayed (including editor force display)
+- \`isAnimated\`: Whether animations are enabled
+
+**Usage Example:**
+\`\`\`
+context.local.data?.['dropdown']?.['isOpen']
+context.local.data?.['dropdown']?.['trigger']?.['type']
+context.local.data?.['dropdown']?.['position']?.['placement']
+\`\`\``;
+
+    // Register local context
+    wwLib.wwElement.useRegisterElementLocalContext(
+      "dropdown",
+      dropdownLocalData.value,
+      {},
+      dropdownMarkdown
+    );
+
+    // Watch isOpened and update nested context for child dropdowns
     watch(
       isOpened,
       (newValue) => {
         localContext.value.data.dropdown.utils.isOpen = newValue;
-        setIsOpenVariable(newValue);
+
+        // Re-register local context to update the values
+        wwLib.wwElement.useRegisterElementLocalContext(
+          "dropdown",
+          dropdownLocalData.value,
+          {},
+          dropdownMarkdown
+        );
       },
       { immediate: true }
     );

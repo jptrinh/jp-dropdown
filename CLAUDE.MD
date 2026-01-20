@@ -140,7 +140,7 @@ This is a WeWeb custom element component built with Vue.js and configured using 
       // Use formula mapping for dynamic field resolution
       const id = resolveMappingFormula(props.content?.arrayPropertyIdFormula, item) ?? item.id
       const name = resolveMappingFormula(props.content?.arrayPropertyNameFormula, item) ?? item.name
-      
+
       return {
         id: id || `item-${Date.now()}-${Math.random()}`,
         name: name || 'Untitled',
@@ -180,7 +180,7 @@ This is a WeWeb custom element component built with Vue.js and configured using 
 
 - **Implementation Checklist:**
   1. ✅ Array property with `options.expandable: true`
-  2. ✅ Meaningful `getItemLabel()` function  
+  2. ✅ Meaningful `getItemLabel()` function
   3. ✅ Complete `options.item` structure with all fields
   4. ✅ Formula properties for each mappable field
   5. ✅ `resolveMappingFormula()` processing in Vue component
@@ -240,7 +240,7 @@ watch(() => [
     internalData.value = props.content?.data || []
   }
   watch(() => props.content?.data, initializeData)
-  
+
   // ✅ CORRECT - Fully reactive
   const internalData = computed(() => {
     return props.content?.data || []
@@ -268,7 +268,7 @@ watch(() => [
 
 ### Build Configuration (ABSOLUTELY CRITICAL):
 - NO build configuration files allowed: webpack.config.js, vite.config.js, rollup.config.js, etc.
-- NO compiler configs: .babelrc, babel.config.js, tsconfig.json, etc.  
+- NO compiler configs: .babelrc, babel.config.js, tsconfig.json, etc.
 - NO build dependencies in package.json: webpack, vite, babel, loaders, preprocessors, etc.
 - Build process handled entirely by @weweb/cli
 - Only include @weweb/cli as devDependency with "latest" version
@@ -304,7 +304,7 @@ setup(props, { emit }) {
     return props.wwEditorState.isEditing;
   });
   /* wwEditor:end */
-  
+
   // Production code continues here...
 }
 ```
@@ -340,9 +340,9 @@ watch(() => props.content?.initialValue, (newValue) => {
 const handleValueChange = (newValue) => {
   if (internalValue.value !== newValue) {
     setInternalValue(newValue);
-    emit('trigger-event', { 
-      name: 'value-change', 
-      event: { value: newValue } 
+    emit('trigger-event', {
+      name: 'value-change',
+      event: { value: newValue }
     });
   }
 };
@@ -354,7 +354,7 @@ const handleValueChange = (newValue) => {
 const displayItems = computed(() => {
   const items = props.content?.items || [];
   const displayPath = props.content?.displayPropertyPath;
-  
+
   return items.map(item => ({
     ...item,
     displayValue: wwLib.wwUtils.resolveObjectPropertyPath(item, displayPath || 'name')
@@ -496,12 +496,12 @@ properties: {
   // Group related properties with consistent naming
   animationSpeed: { /* ... */ },
   animationEnabled: { /* ... */ },
-  
+
   // Visual properties
   colorScheme: { /* ... */ },
   backgroundColor: { /* ... */ },
-  
-  // Content properties  
+
+  // Content properties
   showLabels: { /* ... */ },
   labelColor: { /* ... */ }
 }
@@ -557,12 +557,12 @@ const dynamicStyles = computed(() => ({
   // Mobile first
   width: 100%;
   height: 300px;
-  
+
   // Tablet
   @media (min-width: 768px) {
     height: 400px;
   }
-  
+
   // Desktop
   @media (min-width: 1024px) {
     height: 500px;
@@ -579,25 +579,25 @@ setup(props, { emit }) {
   /* wwEditor:start */
   const isEditing = computed(() => props.wwEditorState.isEditing);
   /* wwEditor:end */
-  
+
   // Reactive data
   const localState = ref(false);
-  
+
   // Computed properties
   const computedValue = computed(() => {
     return props.content?.someValue || 'default';
   });
-  
+
   // Lifecycle hooks
   onMounted(() => {
     // Initialize component
   });
-  
+
   // Methods
   const handleInteraction = () => {
     emit('trigger-event', { name: 'interaction' });
   };
-  
+
   // Return what template needs
   return {
     computedValue,
@@ -749,9 +749,9 @@ watch(() => props.content?.initialValue, (newValue) => {
 const handleValueChange = (newValue) => {
   if (internalValue.value !== newValue) {
     setInternalValue(newValue)
-    emit('trigger-event', { 
-      name: 'value-change', 
-      event: { value: newValue } 
+    emit('trigger-event', {
+      name: 'value-change',
+      event: { value: newValue }
     })
   }
 }
@@ -823,9 +823,9 @@ properties: {
     <div class="main-content">
       <!-- Your component's primary functionality -->
     </div>
-    
+
     <!-- Dropzone Area -->
-    <div 
+    <div
       v-if="content?.showDropzone"
       class="dropzone-area"
       :style="dropzoneStyle"
@@ -834,10 +834,10 @@ properties: {
       <div class="dropzone-info" v-if="someCondition">
         <span class="info-display">{{ someData }}</span>
       </div>
-      
+
       <!-- CRITICAL: wwLayout component for dropzone -->
-      <wwLayout 
-        path="dropzoneContent" 
+      <wwLayout
+        path="dropzoneContent"
         direction="row"
         class="dropzone-container"
       />
@@ -935,7 +935,7 @@ watch(
     gap: 12px;
     padding: 12px;
   }
-  
+
   .dropzone-container {
     width: 100%;
   }
@@ -998,7 +998,7 @@ When `bindable: 'repeatable'` is used, wwLayout will repeat its content for each
 #### Professional Examples:
 
 1. **Card Builder**: Main content + action buttons dropzone
-2. **Dashboard Widget**: Data display + configuration controls dropzone  
+2. **Dashboard Widget**: Data display + configuration controls dropzone
 3. **Form Builder**: Form fields + submit actions dropzone
 4. **Content Showcase**: Featured content + related items dropzone
 5. **Interactive Timeline**: Event content + additional details dropzone
@@ -1019,3 +1019,421 @@ When `bindable: 'repeatable'` is used, wwLayout will repeat its content for each
 - WeWeb strips `wwEditor` blocks in production builds
 - Ensure component works without editor state
 - Test both editor and production modes
+
+### 14. Local Variables (LOCAL Context) - Professional WeWeb Pattern
+
+**Local variables expose component data to the WeWeb formula editor under `context.local.data['component-name']`, allowing NoCode users to access and use component state in bindings and workflows.**
+
+#### What Are Local Variables?
+
+Local variables are reactive data exposed by your component that:
+- **Appear in the formula editor** under `context.local.data['your-component-name']`
+- **Update in real-time** as the component state changes
+- **Can be used in workflows**, bindings, and other components
+- **Provide rich component information** beyond just the internal variable
+
+#### When to Use Local Variables
+
+**ALWAYS implement local variables when:**
+- Your component has **multiple pieces of state** users might need (options, selection details, UI state)
+- Your component is **complex** with nested data structures (dropdowns, modals, tabs, sliders)
+- You want to provide **computed/derived data** to users (filtered options, current slide info)
+- Your component has **utility information** (isOpen, current index, dimensions)
+
+**Examples of components that MUST have local variables:**
+- **Select/Dropdown**: Options list, selected item details, search state, dropdown state
+- **Tabs**: Active tab, all tabs list, tab methods
+- **Slider**: Current slide index, total slides, navigation state
+- **Modal/Dialog**: Open state, content data
+- **Form**: Field values, validation state, submission status
+
+#### Complete Implementation Pattern (Copy-Paste Ready)
+
+```javascript
+// In wwElement.vue setup()
+
+// 1. MANDATORY: Track local context state
+const currentLocalContext = ref({});
+
+// 2. Define local data (computed or ref)
+const localData = computed(() => ({
+  // Computed values that update reactively
+  options: options.value?.map(({ optionId, ...option }) => option) || [],
+
+  // Current selection with details
+  active: {
+    value: variableValue,
+    details: selectionDetails // Computed property with full info
+  },
+
+  // Utility information
+  utils: {
+    type: selectType,
+    isOpen: isOpen,
+    triggerWidth: triggerWidth,
+    triggerHeight: triggerHeight
+  },
+
+  // Optional: Search state (if applicable)
+  ...(hasSearch.value ? {
+    search: {
+      value: computed(() => searchState.value?.value || ''),
+      searchBy: computed(() => searchState.value?.searchBy || []),
+      searchMatches: computed(() => searchState.value?.searchMatches || [])
+    }
+  } : {})
+}));
+
+// 3. OPTIONAL: Define methods for NoCode users
+const localMethods = {
+  methodName: {
+    description: 'What this method does',
+    method: yourMethodFunction,
+    editor: {
+      label: 'Action Label',
+      group: 'Component Group',
+      icon: 'icon-name'
+    }
+  }
+};
+
+// 4. MANDATORY: Add markdown documentation
+const markdown = `### Component Local Information
+
+#### propertyName
+Description of what this property contains and how to use it.
+- \`subProperty\`: What this contains
+- \`anotherProperty\`: Its purpose
+
+#### anotherProperty
+More details about available data...
+
+**Usage Example:**
+\`\`\`
+context.local.data?.['component-name']?.['propertyName']?.['subProperty']
+\`\`\`
+`;
+
+// 5. MANDATORY: Register the local context
+wwLib.wwElement.useRegisterElementLocalContext(
+  'component-name',  // CRITICAL: This becomes context.local.data['component-name']
+  localData.value,   // Use .value for computed, or ref directly
+  localMethods,      // Optional: {} if no methods
+  markdown          // Optional: undefined if no docs (but HIGHLY RECOMMENDED)
+);
+
+// 6. OPTIONAL: Provide for child components (if needed)
+provide('_wwComponentName:localContext', currentLocalContext);
+
+// 7. OPTIONAL: Dynamic context updates (advanced pattern)
+const registerLocalContext = (key) => ({ data, markdown }) => {
+  const currentContext = currentLocalContext.value;
+  const newLocalContext = {
+    data: {
+      ...currentContext.data,
+      [key]: data
+    },
+    methods: {},
+    markdown: {
+      ...currentContext.markdown,
+      [key]: markdown
+    }
+  };
+
+  wwLib.wwElement.useRegisterElementLocalContext(
+    'component-name',
+    newLocalContext.data,
+    newLocalContext.methods,
+    newLocalContext.markdown
+  );
+
+  currentLocalContext.value = newLocalContext;
+};
+```
+
+#### Real-World Example: Select Component
+
+```javascript
+// From ww-input-select implementation
+
+const currentLocalContext = ref({});
+
+// Computed data with full selection details
+const selectionDetails = computed(() => {
+  const dataArray = Array.isArray(rawData.value) ? rawData.value : [];
+  const _optionsMap = new Map(
+    dataArray.map(option => {
+      const mappedValue = resolveMappingFormula(mappingValue.value, option) ?? option.value;
+      return [mappedValue, option];
+    })
+  );
+
+  const formatOption = (opt) => ({
+    value: resolveMappingFormula(mappingValue.value, opt) ?? opt.value,
+    label: resolveMappingFormula(mappingLabel.value, opt) ?? opt.label,
+    icon: resolveMappingFormula(mappingIcon.value, opt) ?? opt.icon,
+    disabled: opt.disabled || false,
+    data: opt || {}
+  });
+
+  if (selectType.value === 'single') {
+    const option = _optionsMap.get(variableValue.value);
+    return option ? formatOption(option) : null;
+  } else {
+    const selectedValues = Array.isArray(variableValue.value) ? variableValue.value : [];
+    return selectedValues.map(value => {
+      const option = _optionsMap.get(value);
+      return option ? formatOption(option) : { value, label: value, isInOptions: false };
+    });
+  }
+});
+
+const _options = computed(() =>
+  options.value?.map(({ optionId, ...option }) => option) || []
+);
+
+const data = ref({
+  options: _options,
+  active: {
+    value: variableValue,
+    details: selectionDetails
+  },
+  utils: {
+    type: selectType,
+    isOpen,
+    triggerWidth,
+    triggerHeight
+  }
+});
+
+// Watch for dynamic search addition
+watch(hasSearch, (newHasSearch) => {
+  if (newHasSearch) {
+    data.value.search = {
+      value: computed(() => searchState.value?.value || ''),
+      searchBy: computed(() => searchState.value?.searchBy || []),
+      searchMatches: computed(() => searchState.value?.searchMatches || [])
+    };
+  } else {
+    delete data.value.search;
+  }
+}, { immediate: true });
+
+const markdown = `### Select local informations
+
+#### options
+Array of all available options in the dropdown. Each option contains:
+- \`value\`: Option's value
+- \`label\`: Display text
+- \`disabled\`: Boolean indicating if option is disabled
+- \`isSelected\`: Boolean indicating if option is selected
+- \`data\`: Data from the repeat context (optional)
+
+#### active
+Information about currently selected option(s):
+- \`value\`: Current selection (single value or array for multiple select)
+- \`details\`: Detailed information about selected option(s)
+
+#### utils
+Component state information:
+- \`type\`: Select type ('single' or 'multiple')
+- \`isOpen\`: Boolean indicating if dropdown is open
+- \`triggerWidth\`: Width of trigger element
+- \`triggerHeight\`: Height of trigger element
+
+#### search (optional)
+Present when search is enabled:
+- \`value\`: Current search input value
+- \`searchBy\`: Fields to search by
+- \`searchMatches\`: Options matching search criteria`;
+
+// Register with multi-part context (advanced)
+const registerLocalContext = (key) => ({ data, markdown }) => {
+  const selectLocalContext = currentLocalContext.value;
+  const newLocalContext = {
+    data: {
+      ...selectLocalContext.data,
+      [key]: data
+    },
+    methods: {},
+    markdown: {
+      ...selectLocalContext.markdown,
+      [key]: markdown
+    }
+  };
+
+  wwLib.wwElement.useRegisterElementLocalContext(
+    'select',
+    newLocalContext.data,
+    newLocalContext.methods,
+    newLocalContext.markdown
+  );
+
+  currentLocalContext.value = newLocalContext;
+};
+
+const registerSelectLocalContext = registerLocalContext('select');
+registerSelectLocalContext({ data, markdown });
+```
+
+#### Access Pattern in Formula Editor
+
+**Users access your local variables like this:**
+
+```javascript
+// Basic access
+context.local.data?.['component-name']
+
+// Specific property
+context.local.data?.['select']?.['active']?.['value']
+
+// Full detail object
+context.local.data?.['select']?.['active']?.['details']?.['label']
+
+// Utility info
+context.local.data?.['select']?.['utils']?.['isOpen']
+
+// Array of options
+context.local.data?.['select']?.['options']
+```
+
+#### Critical Requirements
+
+1. **Component Name MUST be unique and descriptive**
+   - ✅ `'select'`, `'slider'`, `'dialog'`, `'tabs'`
+   - ❌ `'component'`, `'element'`, `'main'`
+
+2. **Data MUST be reactive (computed or ref)**
+   - Use `computed()` for derived data
+   - Use `ref()` for direct state
+   - Pass `.value` to the registration function
+
+3. **Always use optional chaining in access examples**
+   ```javascript
+   // ✅ CORRECT
+   context.local.data?.['component']?.['property']
+
+   // ❌ WRONG
+   context.local.data['component']['property']
+   ```
+
+4. **Markdown documentation is HIGHLY RECOMMENDED**
+   - Appears as tooltip in formula editor
+   - Helps users understand available properties
+   - Provides usage examples
+
+#### Common Local Variable Patterns
+
+**Pattern 1: Simple State Exposure**
+```javascript
+const localData = ref({
+  isOpen: isOpen.value,
+  currentIndex: currentIndex.value
+});
+
+wwLib.wwElement.useRegisterElementLocalContext('component', localData.value, {});
+```
+
+**Pattern 2: Computed with Details**
+```javascript
+const localData = computed(() => ({
+  value: internalValue.value,
+  details: {
+    formatted: formatValue(internalValue.value),
+    isValid: validateValue(internalValue.value),
+    metadata: getMetadata(internalValue.value)
+  }
+}));
+
+wwLib.wwElement.useRegisterElementLocalContext('component', localData.value, {});
+```
+
+**Pattern 3: Dynamic Properties**
+```javascript
+const localData = computed(() => {
+  const base = {
+    items: items.value,
+    selectedItem: selectedItem.value
+  };
+
+  if (showAdvanced.value) {
+    base.advanced = {
+      filters: filters.value,
+      sorting: sorting.value
+    };
+  }
+
+  return base;
+});
+```
+
+**Pattern 4: With Methods**
+```javascript
+const localMethods = {
+  selectItem: {
+    description: 'Select an item by value',
+    method: (value) => selectItem(value),
+    editor: {
+      label: 'Select Item',
+      group: 'Selection',
+      icon: 'cursor-click'
+    }
+  },
+  clearSelection: {
+    description: 'Clear current selection',
+    method: () => clearSelection(),
+    editor: {
+      label: 'Clear',
+      group: 'Selection',
+      icon: 'x'
+    }
+  }
+};
+
+wwLib.wwElement.useRegisterElementLocalContext(
+  'component',
+  localData.value,
+  localMethods,
+  markdown
+);
+```
+
+#### Testing Your Local Variables
+
+**In the WeWeb editor, users can test local variables:**
+
+1. **Formula Explorer**: Check `context.local.data` → see your component
+2. **Binding Panel**: Type `context.local.data['your-component']` to see autocomplete
+3. **Console**: `wwLib.getComponentLocalContext()` to inspect all contexts
+
+#### Integration with Internal Variables
+
+**Local variables complement (don't replace) internal variables:**
+
+```javascript
+// Internal variable: Simple state storage
+const { value: internalValue, setValue } = wwLib.wwVariable.useComponentVariable({
+  uid: props.uid,
+  name: 'value',
+  type: 'string',
+  defaultValue: 'default'
+});
+
+// Local variable: Rich context with details
+const localData = computed(() => ({
+  value: internalValue.value,  // Same as internal variable
+  details: {
+    // Additional computed info
+    formatted: formatValue(internalValue.value),
+    isValid: validateValue(internalValue.value)
+  },
+  options: options.value,
+  utils: { isOpen: isOpen.value }
+}));
+
+wwLib.wwElement.useRegisterElementLocalContext('component', localData.value, {});
+```
+
+**When to use which:**
+- **Internal Variable**: Simple value storage, form integration, workflow variable access
+- **Local Variable**: Rich component data, computed info, multiple related properties
