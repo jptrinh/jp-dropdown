@@ -143,8 +143,8 @@ export default {
 
     const isOpened = ref(false);
 
-    // Local variable data for dropdown state
-    const dropdownLocalData = computed(() => ({
+    // Local variable data for dropdown state - use ref to maintain reactivity
+    const dropdownLocalData = ref({
       isOpen: isOpened.value,
       trigger: {
         type: props.content?.triggerType || "click",
@@ -162,7 +162,7 @@ export default {
           (props.content?.forceDisplayEditor && isEditing.value),
         isAnimated: props.content?.animated || false,
       },
-    }));
+    });
 
     // Markdown documentation for local variables
     const dropdownMarkdown = `### Dropdown Local Information
@@ -197,26 +197,51 @@ context.local.data?.['dropdown']?.['position']?.['placement']
     // Register local context
     wwLib.wwElement.useRegisterElementLocalContext(
       "dropdown",
-      dropdownLocalData.value,
+      dropdownLocalData,
       {},
       dropdownMarkdown
     );
 
-    // Watch isOpened and update nested context for child dropdowns
+    // Watch isOpened and update both nested context and local data
     watch(
       isOpened,
       (newValue) => {
         localContext.value.data.dropdown.utils.isOpen = newValue;
 
-        // Re-register local context to update the values
-        wwLib.wwElement.useRegisterElementLocalContext(
-          "dropdown",
-          dropdownLocalData.value,
-          {},
-          dropdownMarkdown
-        );
+        // Update local data reactively
+        dropdownLocalData.value.isOpen = newValue;
+        dropdownLocalData.value.state.isDisplayed =
+          newValue || (props.content?.forceDisplayEditor && isEditing.value);
       },
       { immediate: true }
+    );
+
+    // Watch content properties and update local data
+    watch(
+      () => [
+        props.content?.triggerType,
+        props.content?.disabled,
+        props.content?.position,
+        props.content?.alignment,
+        props.content?.offsetX,
+        props.content?.offsetY,
+        props.content?.animated,
+      ],
+      () => {
+        dropdownLocalData.value.trigger = {
+          type: props.content?.triggerType || "click",
+          disabled: props.content?.disabled || false,
+        };
+        dropdownLocalData.value.position = {
+          placement: props.content?.position || "bottom",
+          alignment: props.content?.alignment || "start",
+          offsetX: props.content?.offsetX || "0px",
+          offsetY: props.content?.offsetY || "0px",
+        };
+        dropdownLocalData.value.state.isAnimated =
+          props.content?.animated || false;
+      },
+      { deep: true, immediate: true }
     );
 
     const isDisplayed = computed(() => {
